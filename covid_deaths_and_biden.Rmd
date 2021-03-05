@@ -1,30 +1,68 @@
 ---
-title: "Covid_deaths_and_Biden"
+title: "COVID deaths and Joe Biden"
 author: "Kiran Bhattacharyya"
 date: "2/20/2021"
 output: html_document
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(leaps)
+library(scales)
+library(caret)
+library(reshape2)
 ```
 
-## R Markdown
+## Did the deaths due to COVID-19 influence Joe Biden's election?
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Here, I look at COVID-19 deaths by county in the USA and try to understand how it may have influenced the 2020 US Presidential election. Alongside COVID-19 deaths, I also look at other demographics of the population in the county like racial composition, educational attainment, median income, and unemployment rates. The population demographics data are from 2019. The COVID-19 deaths reported here are aggregates from Feb 1, 2020 to Oct 17,2020. This specific range was selected since it was the range of time available for the data that was immediately preceding the election on Nov 6, 2020. All associated code and data for this project can be found in this GitHub repo: https://github.com/MiningMyBusiness/covid_and_biden
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+I must note here that the data was created by merging together disparate data sets which are all openly available for download from different US government agencies. There is a description of where to find these data sets and the code for how they were merged here: https://github.com/MiningMyBusiness/covid_and_biden/tree/main/raw_data
 
-```{r cars}
-summary(cars)
+```{r data_clean, echo=TRUE}
+# read in covid data
+covid_data <- readRDS('covid_data_combo_by_county.rds')
+
+covid_data <- mutate(covid_data, 
+                     high.school.or.below = Percent.of.adults.with.less.than.a.high.school.diploma.2014_18 + Percent.of.adults.with.a.high.school.diploma.only.2014_18,
+                     some.college.or.above = Percent.of.adults.completing.some.college.or.associates.degree.2014_18 + Percent.of.adults.with.a.bachelors.degree.or.higher.2014_18)
+
+names(covid_data)
 ```
 
-## Including Plots
+Above we load in the data, do a little processing, and print out the column names. The column names are mostly self-explanatory.  
 
-You can also embed plots, for example:
+### Total COVID deaths, proportion of COVID deaths, and Biden's victory
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+Let's start by looking at the total number of COVID deaths, the proportion of covid deaths, and whether Joe Biden won by county. 
+
+```{r pressure, echo=TRUE}
+ggplot(data=covid_data) + 
+  geom_point(mapping=aes(x=COVID19.Deaths,
+                         y=covid_death_prop,
+                         color=won),
+                                     alpha=0.5) + 
+  scale_x_continuous(trans='log2') +
+  geom_hline(yintercept=mean(covid_data$covid_death_prop), 
+             alpha=0.5) + 
+  geom_vline(xintercept=mean(covid_data$COVID19.Deaths),
+             alpha=0.5) + 
+  geom_text(data=filter(covid_data,
+                        covid_death_prop > quantile(covid_death_prop, 0.95),
+                        COVID19.Deaths > quantile(COVID19.Deaths, 0.95)),
+            mapping=aes(x=COVID19.Deaths,y=covid_death_prop,
+                        label=State), hjust=0, vjust=0,
+            alpha=0.5) +
+  labs(x='Number of deaths due to COVID (log-scale)', 
+       y="Proportion of total deaths due to COVID",
+       title="COVID deaths by county in the US",
+       color="Biden won?")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
