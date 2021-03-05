@@ -39,11 +39,11 @@ names(covid_data)
 
 Above we load in the data, do a little processing, and print out the column names. The column names are mostly self-explanatory.  
 
-### Total COVID deaths, proportion of COVID deaths, and Biden's victory
+### Total COVID deaths, proportion of deaths due to COVID, and Biden's victory
 
 Let's start by looking at the total number of COVID deaths, the proportion of covid deaths, and whether Joe Biden won by county. 
 
-```{r pressure, echo=TRUE}
+```{r deaths_biden, echo=TRUE}
 ggplot(data=covid_data) + 
   geom_point(mapping=aes(x=COVID19.Deaths,
                          y=covid_death_prop,
@@ -66,3 +66,91 @@ ggplot(data=covid_data) +
        color="Biden won?")
 ```
 
+It looks as if Joe Biden got the majority of votes in the counties that had larger numbers of deaths due to COVID19. However, it isn't clear if he won in counties that had larger proportion of total deaths due to COVID. This could just imply that Biden tended to win in counties with larger populations and these counties also had larger numbers of deaths due to COVID19 (due to their bigger population). 
+
+Let's look at how the proportion of deaths due to COVID relates to the population.
+
+### Proportion of deaths due to COVID, population, and Biden's victory
+
+```{r pop_biden, echo=TRUE}
+ggplot(data=covid_data) + geom_point(mapping=aes(y=covid_death_prop,
+                                                 x=POP_ESTIMATE_2019,
+                                                 color=won),
+                                     alpha=0.4) + 
+  geom_smooth(mapping=aes(y=covid_death_prop, x=POP_ESTIMATE_2019)) +
+  scale_x_continuous(trans='log2') +
+  geom_hline(yintercept=mean(covid_data$covid_death_prop), 
+             alpha=0.5) + 
+  geom_vline(xintercept=mean(covid_data$POP_ESTIMATE_2019),
+             alpha=0.5) +
+  labs(y="Proportions of deaths due to Covid",
+       x="Population 2019 (est., log-scale)",
+       title="Deaths by county and population",
+       color="Biden won?")
+```
+
+So it looks clear that Biden was more likely to win in counties with larger populations, regardless of the proportion of deaths due to COVID. However, it does seem like Biden was more likely to win in counties with smaller populations which also had larger proportion of deaths due to COVID. However, still less likely to win in counties with smaller populations overall than Trump. 
+
+Let's look at this data another way. 
+
+```{r pop_biden_2, echo=TRUE}
+ggplot(data=covid_data) + geom_point(mapping=aes(y=covid_death_prop,
+                                                 x=prop_biden_votes,
+                                                 size=POP_ESTIMATE_2019),
+                                     alpha=0.4) +
+  geom_smooth(mapping=aes(y=covid_death_prop, 
+                          x=prop_biden_votes)) +
+  geom_hline(yintercept=mean(covid_data$covid_death_prop), 
+             alpha=0.5) + 
+  geom_vline(xintercept=mean(covid_data$prop_biden_votes),
+             alpha=0.5) +
+  labs(y="Proportions of deaths due to covid",
+       x="Proportion of votes for Joe Biden",
+       title="Deaths by covid and election results",
+       size="Population 2019 (est.)")
+```
+
+And yet another way...
+
+```{r pop_biden_3, echo=TRUE}
+ggplot(data=covid_data) + geom_point(mapping=aes(size=covid_death_prop,
+                                                 x=prop_biden_votes,
+                                                 y=POP_ESTIMATE_2019),
+                                     alpha=0.3) +
+  scale_y_continuous(trans='log2') +
+  geom_smooth(mapping=aes(y=POP_ESTIMATE_2019, 
+                          x=prop_biden_votes)) +
+  geom_hline(yintercept=mean(covid_data$POP_ESTIMATE_2019), 
+             alpha=0.5) + 
+  geom_vline(xintercept=mean(covid_data$prop_biden_votes),
+             alpha=0.5) +
+  labs(y="Population estimate 2019 (log-scale)",
+       x="Proportion of votes for Joe Biden",
+       title="Deaths by covid and election results",
+       color="Proportion covid deaths")
+```
+
+So it looks like Biden won in counties with larger populations and those with a larger proportion of deaths due to COVID. However, there are a lot of features of the demographics of these counties that could also effect the result of the 2020 Presidential election in the US. 
+
+Let's take a closer look at other features of the counties like income, education, race, and unemployment.
+
+### Proportion of white population, proportion of deaths due to COVID, and Biden
+
+```{r prop_white, echo=TRUE}
+ggplot(data=covid_data) + geom_point(mapping=aes(size=POP_ESTIMATE_2019,
+                                                 x=prop_white,
+                                                 y=covid_death_prop,
+                                                 color=won),
+                                     alpha=0.4) +
+  geom_smooth(mapping=aes(y=covid_death_prop, 
+                          x=prop_white)) +
+  geom_hline(yintercept=mean(covid_data$covid_death_prop), 
+             alpha=0.5) + 
+  geom_vline(xintercept=mean(covid_data$prop_white),
+             alpha=0.5) +
+  labs(y="Proportion of deaths due to Covid",
+       x="Proportion of White people in the population",
+       title="Deaths by covid and race",
+       color="Biden won?",
+       size="Population 2019 (est.)")
+```
