@@ -110,31 +110,11 @@ ggplot(data=covid_data) + geom_point(mapping=aes(y=covid_death_prop,
        size="Population 2019 (est.)")
 ```
 
-And yet another way...
-
-```{r pop_biden_3, echo=TRUE}
-ggplot(data=covid_data) + geom_point(mapping=aes(size=covid_death_prop,
-                                                 x=prop_biden_votes,
-                                                 y=POP_ESTIMATE_2019),
-                                     alpha=0.3) +
-  scale_y_continuous(trans='log2') +
-  geom_smooth(mapping=aes(y=POP_ESTIMATE_2019, 
-                          x=prop_biden_votes)) +
-  geom_hline(yintercept=mean(covid_data$POP_ESTIMATE_2019), 
-             alpha=0.5) + 
-  geom_vline(xintercept=mean(covid_data$prop_biden_votes),
-             alpha=0.5) +
-  labs(y="Population estimate 2019 (log-scale)",
-       x="Proportion of votes for Joe Biden",
-       title="Deaths by covid and election results",
-       color="Proportion covid deaths")
-```
-
 So it looks like Biden won in counties with larger populations and those with a larger proportion of deaths due to COVID. However, there are a lot of features of the demographics of these counties that could also effect the result of the 2020 Presidential election in the US. 
 
 Let's take a closer look at other features of the counties like income, education, race, and unemployment.
 
-### Proportion of white population, proportion of deaths due to COVID, and Biden
+### Proportion of White population, proportion of deaths due to COVID, and votes for Biden
 
 ```{r prop_white, echo=TRUE}
 ggplot(data=covid_data) + geom_point(mapping=aes(size=POP_ESTIMATE_2019,
@@ -154,3 +134,51 @@ ggplot(data=covid_data) + geom_point(mapping=aes(size=POP_ESTIMATE_2019,
        color="Biden won?",
        size="Population 2019 (est.)")
 ```
+
+Joe Biden mostly lost in counties with majority white populations and small overall populations. However, the proportion of deaths due to COVID-19 was also lower for these counties. 
+
+Since White, Black, and Hispanic are the largest racial categories in the US, similar graphs with different x-axis labels for Black and Hispanic people show an opposite trend (as larger proportions of White people suggest smaller proportions of Black and Hispanic people and vice versa). But, it's still worth visualizing. 
+
+### Proportion of Black population, proportion of deaths due to COVID, and votes for Biden
+
+```{r prop_black, echo=TRUE}
+ggplot(data=covid_data) + geom_point(mapping=aes(size=POP_ESTIMATE_2019,
+                                                 x=prop_black,
+                                                 y=covid_death_prop,
+                                                 color=won),
+                                     alpha=0.4) +
+  geom_smooth(mapping=aes(y=covid_death_prop, 
+                          x=prop_black)) +
+  geom_hline(yintercept=mean(covid_data$covid_death_prop), 
+             alpha=0.5) + 
+  geom_vline(xintercept=mean(covid_data$prop_black),
+             alpha=0.5) +
+  labs(y="Proportion of deaths due to Covid",
+       x="Proportion of Black people in the population",
+       title="Deaths by covid and race",
+       color="Biden won?",
+       size="Population 2019 (est.)")
+```
+
+### Proportion of Hispanic population, proportion of deaths due to COVID, and votes for Biden
+
+```{r prop_hispanic, echo=TRUE}
+ggplot(data=covid_data) + geom_point(mapping=aes(size=POP_ESTIMATE_2019,
+                                                 x=prop_hisp,
+                                                 y=covid_death_prop,
+                                                 color=won),
+                                     alpha=0.4) +
+  geom_smooth(mapping=aes(y=covid_death_prop, 
+                          x=prop_hisp)) +
+  geom_hline(yintercept=mean(covid_data$covid_death_prop), 
+             alpha=0.5) + 
+  geom_vline(xintercept=mean(covid_data$prop_hisp),
+             alpha=0.5) +
+  labs(y="Proportion of deaths due to Covid",
+       x="Proportion of Hispanic people",
+       title="Deaths by covid and race",
+       color="Biden won?",
+       size="Population 2019 (est.)")
+```
+
+Proportions of deaths due to COVID-19 were larger for counties with larger Black and Hispanic populations. These also seem to be the counties that were more likely to vote for Biden. 
